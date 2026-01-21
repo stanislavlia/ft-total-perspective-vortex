@@ -147,3 +147,36 @@ Mean accuracy of 6 experiments: 0.6261
 - Code custom classifier
 - Implement eigenvalue/SVD functions from scratch
 - Test on additional datasets
+
+---
+# Subject-Specific BCI Model Strategy
+
+## Approach
+We employ a **within-subject evaluation framework** with subject-specific models, which is the standard approach in motor imagery BCI research.
+
+## Model Architecture
+- **Pipeline**: CSP (Common Spatial Patterns) + LDA (Linear Discriminant Analysis)
+- **One model per (subject, experiment) pair**: 109 subjects × 6 experiments = 654 models
+
+## Data Splitting
+- **Independent splits per subject**: Each subject's data is split separately (typically 80% train / 20% test)
+- **No cross-subject mixing**: Training and testing data always come from the same subject
+- **Never-learned data**: Test set contains trials never seen during training
+
+## Evaluation Process
+1. For each subject (1-109):
+   - For each experiment (0-5):
+     - Load subject's data for this experiment
+     - Create train/test split within this subject
+     - Train CSP+LDA pipeline on training set
+     - Evaluate on test set
+     - Record accuracy
+
+2. Final metric: Mean accuracy across all 654 evaluations
+3. Success criterion: Mean accuracy ≥ 60%
+
+## Rationale
+- **High inter-subject variability**: EEG patterns differ dramatically between individuals due to anatomical differences, electrode placement, and neural signatures
+- **Performance considerations**: Cross-subject models typically show 15-20% accuracy degradation compared to within-subject
+- **Real-world applicability**: Practical BCI systems require user calibration (5-10 minutes) before use
+- **Standard practice**: BCI competitions and benchmarks use within-subject evaluation
