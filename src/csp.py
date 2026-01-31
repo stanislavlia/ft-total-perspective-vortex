@@ -69,5 +69,24 @@ class CommonSpatialPattern(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        pass
+        """Applies learnt CSP filters and transform trial from (n_channels, n_times) to (n_components,)"""
+
+        n_trials = X.shape[0]
+
+        if self.filters_ is None:
+            raise ValueError("Must call fit() before transform()!")
+
+        X_transformed = np.zeros((n_trials, self.n_components))
+
+        
+        for i in range(n_trials):
+
+            filtered = self.filters_.T @ X[i] #produces (n_components, n_times) shape
+
+            #collapse time dimension by computing variance
+            features = np.log(np.var(filtered, axis=1))
+            X_transformed[i, :] = features
+            
+
+        return X_transformed
 
