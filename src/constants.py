@@ -8,6 +8,13 @@ class TaskType(Enum):
     MOTOR_EXECUTION = "motor_execution"
     MOTOR_IMAGERY = "motor_imagery"
 
+class Classifiers(Enum):
+    LDA = "lda"
+    LOGREG = "logreg"
+    KNN = "knn"
+    SVC = "svc"
+
+
 MOTOR_CHANNELS = [
     'C3..',   # Left motor cortex (primary)
     'Cz..',   # Central motor area (feet)
