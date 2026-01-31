@@ -58,8 +58,10 @@ class CommonSpatialPattern(BaseEstimator, TransformerMixin):
         # We need to select  n_components/2 from top and bottom
 
         selected_components = np.concatenate(
+            [
             eigenvectors[:, :self.n_components // 2], #top
             eigenvectors[:, - self.n_components // 2:], #bottom
+            ],
             axis=1
         )
 
