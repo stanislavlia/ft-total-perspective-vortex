@@ -20,7 +20,7 @@ class EpochingConfig:
     baseline: Optional[tuple] = None
 
 
-class EEGDataLoader:
+class   EEGDataLoader:
     """
     Data loader for PhysioNet Motor Imagery EEG dataset.
     Returns MNE Epochs filtered by subject, task type, and paradigm.
