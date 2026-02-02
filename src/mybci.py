@@ -3,7 +3,7 @@ import sys
 from constants import TaskType, TaskParadigm
 from data_loader import EEGDataLoader, EpochingConfig
 from pipeline import BCIPipelineConfig
-from commands import run_train_mode, run_predict_mode, run_evaluate, run_visualize
+from cli_commands import run_train_mode, run_predict_mode, run_evaluate, run_visualize
 
 DEFAULT_DATA_DIR = "../data/raw"
 

@@ -1,5 +1,5 @@
-import sys
 import click
+from sklearn.model_selection import train_test_split
 from data_loader import EEGDataLoader
 from pipeline import (
     BCIPipelineConfig,
@@ -63,12 +63,46 @@ def run_predict_mode(
 
     Displays prediction vs truth for each epoch in test set.
     """
-    # TODO: Implement predict mode
-    # 1. Load epochs
-    # 2. Split into train/test
-    # 3. Train pipeline on training set
-    # 4. Predict on each test epoch
-    # 5. Display: epoch XX: [pred] [truth] True/False
-    # 6. Display final accuracy
-    click.echo("Predict mode not yet implemented")
-    sys.exit(1)
+    # Load epochs
+    epochs = data_loader.get_epochs(
+        subject_id=subject_id,
+        task_type=task_type,
+        paradigm=task_paradigm,
+    )
+
+    # Create reverse mapping: event_id -> label name
+    id_to_label = {v: k for k, v in epochs.event_id.items()}
+
+    X = epochs.get_data()
+    y = epochs.events[:, -1]
+
+    # Split into train/test
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=config.test_size,
+        random_state=config.random_state,
+        stratify=y,
+    )
+
+    # Build and train pipeline
+    pipeline = construct_pipeline_from_config(config)
+    click.echo("Training model...")
+    pipeline.fit(X_train, y_train)
+
+    # Predict on each test epoch
+    click.echo()
+    predictions = pipeline.predict(X_test)
+    correct = 0
+
+    for i, (pred, truth) in enumerate(zip(predictions, y_test)):
+        is_correct = pred == truth
+        if is_correct:
+            correct += 1
+        pred_label = id_to_label.get(pred, str(pred))
+        truth_label = id_to_label.get(truth, str(truth))
+        click.echo(f"epoch {i:02d}: [{pred_label}] [{truth_label}] {is_correct}")
+
+    # Display final accuracy
+    accuracy = correct / len(y_test)
+    click.echo()
+    click.echo(f"Accuracy: {accuracy:.4f}")
