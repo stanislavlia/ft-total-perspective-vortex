@@ -57,11 +57,15 @@ def run_predict_mode(
     subject_id: str,
     task_type: TaskType,
     task_paradigm: TaskParadigm,
-):
+    verbose: bool = True,
+) -> float:
     """
     Predict mode: train model and show per-epoch predictions.
 
     Displays prediction vs truth for each epoch in test set.
+
+    Returns:
+        Test accuracy as a float between 0 and 1.
     """
     # Load epochs
     epochs = data_loader.get_epochs(
@@ -86,11 +90,13 @@ def run_predict_mode(
 
     # Build and train pipeline
     pipeline = construct_pipeline_from_config(config)
-    click.echo("Training model...")
+    if verbose:
+        click.echo("Training model...")
     pipeline.fit(X_train, y_train)
 
     # Predict on each test epoch
-    click.echo()
+    if verbose:
+        click.echo()
     predictions = pipeline.predict(X_test)
     correct = 0
 
@@ -98,11 +104,15 @@ def run_predict_mode(
         is_correct = pred == truth
         if is_correct:
             correct += 1
-        pred_label = id_to_label.get(pred, str(pred))
-        truth_label = id_to_label.get(truth, str(truth))
-        click.echo(f"epoch {i:02d}: [{pred_label}] [{truth_label}] {is_correct}")
+        if verbose:
+            pred_label = id_to_label.get(pred, str(pred))
+            truth_label = id_to_label.get(truth, str(truth))
+            click.echo(f"epoch {i:02d}: [{pred_label}] [{truth_label}] {is_correct}")
 
-    # Display final accuracy
+    # Calculate final accuracy
     accuracy = correct / len(y_test)
-    click.echo()
-    click.echo(f"Accuracy: {accuracy:.4f}")
+    if verbose:
+        click.echo()
+        click.echo(f"Accuracy: {accuracy:.4f}")
+
+    return accuracy

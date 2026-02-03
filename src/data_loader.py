@@ -1,12 +1,14 @@
 import mne
 import os
+import warnings
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict
 
 from constants import MOTOR_CHANNELS, RUN_TYPE_TO_TASK, TaskParadigm, TaskType
 from loguru import logger
 
-mne.set_log_level('WARNING')
+mne.set_log_level('ERROR')
+warnings.filterwarnings('ignore', category=RuntimeWarning, module='mne')
 
 
 @dataclass

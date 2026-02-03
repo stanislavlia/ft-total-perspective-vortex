@@ -1,5 +1,5 @@
 from .run import run_train_mode, run_predict_mode
-from .evaluate import run_evaluate
+from .evaluate import run_evaluate, ExperimentResults, EXPERIMENTS
 from .visualize import run_visualize
 
 #We can import all our defined utils (run_something) from the module, without specifying submodules
@@ -10,4 +10,6 @@ __all__ = [
     "run_predict_mode",
     "run_evaluate",
     "run_visualize",
+    "ExperimentResults",
+    "EXPERIMENTS",
 ]
