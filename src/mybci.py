@@ -27,8 +27,6 @@ def cli(ctx):
               required=True, help='Task paradigm: left_right_hand or hands_feet')
 @click.option('--mode', '-m', type=click.Choice(['train', 'predict']),
               default='train', help='Mode: train (CV + evaluation) or predict (per-epoch predictions)')
-@click.option('--use-wavelets', '-w', is_flag=True,
-              help='Use Haar wavelet transform (BONUS)')
 @click.option('--data-dir', '-d', type=click.Path(exists=True),
               default=DEFAULT_DATA_DIR, help='Path to raw data directory')
 @click.option('--cv-folds', type=int, default=5,
@@ -45,13 +43,11 @@ def cli(ctx):
               help='Low cutoff frequency for bandpass filter (Hz)')
 @click.option('--h-freq', type=float, default=30.0,
               help='High cutoff frequency for bandpass filter (Hz)')
-@click.option('--wavelet-level', type=int, default=8,
-              help='Wavelet decomposition level (used with --use-wavelets)')
 @click.option('--algorithm', '-a', type=click.Choice(['lda', 'logreg', 'svc']),
               default='lda', help='Classifier algorithm')
-def run(subject, task_type_str, task_paradigm_str, mode, use_wavelets,
+def run(subject, task_type_str, task_paradigm_str, mode,
         data_dir, cv_folds, test_size, n_components,
-        t_min, t_max, l_freq, h_freq, wavelet_level, algorithm):
+        t_min, t_max, l_freq, h_freq, algorithm):
     """
     Run training or prediction on a single subject.
 
@@ -71,8 +67,6 @@ def run(subject, task_type_str, task_paradigm_str, mode, use_wavelets,
     click.echo(f"  Algorithm:  {algorithm}")
     click.echo(f"  Epoch:      [{t_min}, {t_max}] s")
     click.echo(f"  Filter:     [{l_freq}, {h_freq}] Hz")
-    if use_wavelets:
-        click.echo(f"  Wavelet:    level {wavelet_level}")
     click.echo()
 
     # Create epoching config
@@ -101,8 +95,6 @@ def run(subject, task_type_str, task_paradigm_str, mode, use_wavelets,
         cv_folds=cv_folds,
         test_size=test_size,
         n_csp_components=n_components,
-        use_wavelet=use_wavelets,
-        wavelet_level=wavelet_level,
         classifier_algorithm=algorithm,
     )
 
@@ -132,16 +124,12 @@ def run(subject, task_type_str, task_paradigm_str, mode, use_wavelets,
               help='Low cutoff frequency for bandpass filter (Hz)')
 @click.option('--h-freq', type=float, default=30.0,
               help='High cutoff frequency for bandpass filter (Hz)')
-@click.option('--use-wavelets', '-w', is_flag=True,
-              help='Use Haar wavelet transform (BONUS)')
-@click.option('--wavelet-level', type=int, default=8,
-              help='Wavelet decomposition level (used with --use-wavelets)')
 @click.option('--subjects', '-s', type=str, default=None,
               help='Comma-separated list of subject numbers (e.g., "1,2,3") or range (e.g., "1-10"). If not specified, evaluates all subjects.')
 @click.option('--verbose', '-v', is_flag=True,
               help='Print per-subject accuracy instead of progress bar')
 def evaluate(data_dir, n_components, test_size, t_min, t_max, l_freq, h_freq,
-             use_wavelets, wavelet_level, subjects, verbose):
+             subjects, verbose):
     """
     Evaluate pipeline across all subjects and experiments.
 
@@ -182,8 +170,6 @@ def evaluate(data_dir, n_components, test_size, t_min, t_max, l_freq, h_freq,
     config = BCIPipelineConfig(
         test_size=test_size,
         n_csp_components=n_components,
-        use_wavelet=use_wavelets,
-        wavelet_level=wavelet_level,
     )
 
     click.echo("Starting full evaluation...")
@@ -193,8 +179,6 @@ def evaluate(data_dir, n_components, test_size, t_min, t_max, l_freq, h_freq,
     click.echo(f"  Test size:    {test_size}")
     click.echo(f"  Epoch:        [{t_min}, {t_max}] s")
     click.echo(f"  Filter:       [{l_freq}, {h_freq}] Hz")
-    if use_wavelets:
-        click.echo(f"  Wavelet:      level {wavelet_level}")
 
     run_evaluate(
         data_loader=data_loader,
