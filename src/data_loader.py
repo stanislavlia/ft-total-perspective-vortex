@@ -1,6 +1,7 @@
 import mne
 import os
 import warnings
+import numpy as np
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict
 
@@ -167,6 +168,68 @@ class   EEGDataLoader:
         )
 
         return concatenated_epochs
+
+    def get_raw_and_events(
+        self,
+        subject_id: str,
+        task_type: TaskType,
+        paradigm: TaskParadigm,
+    ) -> tuple:
+        """
+        Load raw continuous EEG data with events for streaming playback.
+
+        Returns:
+            (raw, events, event_id) where:
+            - raw: mne.io.Raw, filtered and channel-selected continuous data
+            - events: numpy array (n_events, 3) sorted chronologically
+            - event_id: dict mapping label name -> event code (excluding 'rest')
+        """
+        if subject_id not in self._subject_ids:
+            raise ValueError(f"Unknown subject: {subject_id}")
+
+        files = self._get_edf_files_for_subject(subject_id, paradigm, task_type)
+        if not files:
+            raise ValueError(
+                f"No files found for {subject_id} with "
+                f"task_type={task_type.value}, paradigm={paradigm.value}"
+            )
+
+        raw_list = []
+        event_id = None
+
+        for filepath in files:
+            run_id = self._extract_run_id(filepath)
+            raw = mne.io.read_raw_edf(filepath, preload=True, verbose=False)
+            event_dict = self._rename_annotations(raw, run_id)
+            if event_id is None:
+                event_id = {k: v for k, v in event_dict.items() if k != 'rest'}
+            raw_list.append(raw)
+
+        raw_concat = mne.concatenate_raws(raw_list)
+
+        # Select motor channels
+        raw_concat.pick_channels(self.epoching_config.select_channels, ordered=True)
+
+        # Apply bandpass filter
+        if self.epoching_config.apply_filter:
+            raw_concat.filter(
+                l_freq=self.epoching_config.l_freq,
+                h_freq=self.epoching_config.h_freq,
+                verbose=False,
+            )
+
+        events, _ = mne.events_from_annotations(raw_concat)
+        # Keep only task events (exclude rest)
+        task_event_codes = set(event_id.values())
+        mask = np.isin(events[:, -1], list(task_event_codes))
+        events = events[mask]
+
+        logger.info(
+            f"Loaded raw data for {subject_id}: {len(events)} events "
+            f"({task_type.value}, {paradigm.value})"
+        )
+
+        return raw_concat, events, event_id
 
     def get_epochs_for_subjects(
         self,

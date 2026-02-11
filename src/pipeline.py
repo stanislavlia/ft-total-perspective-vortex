@@ -10,6 +10,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from data_loader import EEGDataLoader
 from constants import TaskParadigm, TaskType
 from loguru import logger
+import joblib
 
 @dataclass
 class BCIPipelineConfig:
@@ -30,6 +31,7 @@ class SubjectEvaluationResult:
     test_accuracy: float
     n_train_samples: int
     n_test_samples: int
+    pipeline: Pipeline
 
 
 def construct_pipeline_from_config(config: BCIPipelineConfig) -> Pipeline:
@@ -119,7 +121,8 @@ def train_and_evaluate_on_subject(
         cv_std=float(cv_scores.std()),
         test_accuracy=float(test_accuracy),
         n_train_samples=len(X_train),
-        n_test_samples=len(X_test)
+        n_test_samples=len(X_test),
+        pipeline=pipeline
     )
 
 
@@ -200,3 +203,11 @@ def summarize_experiment_results(results: List[SubjectEvaluationResult]) -> dict
         "n_subjects": len(results)
     }
 
+def save_pipeline_to_file(pipeline: Pipeline, epoching_config, path: str):
+    logger.info(f"Saving pipeline to file: {path}")
+    joblib.dump({"pipeline": pipeline, "epoching_config": epoching_config}, filename=path)
+
+def load_pipeline(path: str) -> dict:
+    logger.info(f"Load pipeline from file: {path}")
+    data = joblib.load(path)
+    return data["pipeline"], data["epoching_config"]
