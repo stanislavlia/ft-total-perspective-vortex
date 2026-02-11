@@ -45,9 +45,14 @@ def cli(ctx):
               help='High cutoff frequency for bandpass filter (Hz)')
 @click.option('--algorithm', '-a', type=click.Choice(['lda', 'logreg', 'svc']),
               default='lda', help='Classifier algorithm')
+@click.option('--save-model', is_flag=True, default=False,
+              help='Save the trained model to disk after training')
+@click.option('--model-path', type=click.Path(),
+              default=None, help='Path to save/load the model (.joblib file)')
 def run(subject, task_type_str, task_paradigm_str, mode,
         data_dir, cv_folds, test_size, n_components,
-        t_min, t_max, l_freq, h_freq, algorithm):
+        t_min, t_max, l_freq, h_freq, algorithm,
+        save_model, model_path):
     """
     Run training or prediction on a single subject.
 
@@ -98,12 +103,23 @@ def run(subject, task_type_str, task_paradigm_str, mode,
         classifier_algorithm=algorithm,
     )
 
+    # Validate options
+    if mode == 'predict' and model_path is None:
+        click.echo("Error: --model-path is required in predict mode", err=True)
+        sys.exit(1)
+
     # Dispatch to appropriate mode
     try:
         if mode == 'train':
-            run_train_mode(data_loader, config, subject_id, task_type, task_paradigm)
+            run_train_mode(
+                data_loader, config, subject_id, task_type, task_paradigm,
+                save_model=save_model, model_path=model_path,
+            )
         else:
-            run_predict_mode(data_loader, config, subject_id, task_type, task_paradigm)
+            run_predict_mode(
+                data_loader, config, subject_id, task_type, task_paradigm,
+                model_path=model_path,
+            )
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
