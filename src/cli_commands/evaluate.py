@@ -4,9 +4,8 @@ from dataclasses import dataclass
 from tqdm import tqdm
 
 from data_loader import EEGDataLoader
-from pipeline import BCIPipelineConfig
+from pipeline import BCIPipelineConfig, construct_pipeline_from_config, train_and_evaluate_on_subject
 from constants import TaskType, TaskParadigm
-from .run import run_predict_mode
 
 
 # Define the 4 experiments as (task_type, paradigm) pairs with experiment index
@@ -86,14 +85,18 @@ def run_evaluate(
 
         for subject_id in subject_iter:
             try:
-                accuracy = run_predict_mode(
+                pipeline = construct_pipeline_from_config(config)
+                result = train_and_evaluate_on_subject(
                     data_loader=data_loader,
-                    config=config,
+                    pipeline=pipeline,
                     subject_id=subject_id,
-                    task_type=task_type,
                     task_paradigm=paradigm,
-                    verbose=False,
+                    task_type=task_type,
+                    test_size=config.test_size,
+                    cv_folds=config.cv_folds,
+                    random_state=config.random_state,
                 )
+                accuracy = result.test_accuracy
                 subject_accuracies[subject_id] = accuracy
                 all_accuracies.append(accuracy)
 

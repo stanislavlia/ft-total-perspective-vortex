@@ -248,9 +248,57 @@ def _parse_subjects(subjects_str: str, available_subjects: list) -> list:
 
 
 @cli.command()
-def visualize():
+@click.option('--subject', '-s', type=int, required=True,
+              help='Subject number (1-109)')
+@click.option('--task-type', '-t', 'task_type_str',
+              type=click.Choice([t.value for t in TaskType]),
+              required=True, help='Task type: motor_execution or motor_imagery')
+@click.option('--task-paradigm', '-p', 'task_paradigm_str',
+              type=click.Choice([p.value for p in TaskParadigm]),
+              required=True, help='Task paradigm: left_right_hand or hands_feet')
+@click.option('--data-dir', '-d', type=click.Path(exists=True),
+              default=DEFAULT_DATA_DIR, help='Path to raw data directory')
+@click.option('--l-freq', type=float, default=8.0,
+              help='Low cutoff frequency for bandpass filter (Hz)')
+@click.option('--h-freq', type=float, default=30.0,
+              help='High cutoff frequency for bandpass filter (Hz)')
+@click.option('--psd', is_flag=True, default=False,
+              help='Also plot power spectral density before/after filtering')
+@click.option('--save', type=click.Path(), default=None,
+              help='Save plot to file instead of displaying')
+def visualize(subject, task_type_str, task_paradigm_str, data_dir,
+              l_freq, h_freq, psd, save):
     """Visualize raw and filtered EEG data."""
-    run_visualize()
+    task_type = TaskType(task_type_str)
+    task_paradigm = TaskParadigm(task_paradigm_str)
+    subject_id = f"S{subject:03d}"
+
+    epoching_config = EpochingConfig(
+        l_freq=l_freq,
+        h_freq=h_freq,
+        apply_filter=False,  # We'll filter manually for before/after
+    )
+
+    try:
+        data_loader = EEGDataLoader(raw_data_dir=data_dir, epoching_config=epoching_config)
+    except (FileNotFoundError, NotADirectoryError, ValueError) as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+    if subject_id not in data_loader.subject_ids:
+        click.echo(f"Error: Subject {subject_id} not found in dataset", err=True)
+        sys.exit(1)
+
+    run_visualize(
+        data_loader=data_loader,
+        subject_id=subject_id,
+        task_type=task_type,
+        task_paradigm=task_paradigm,
+        l_freq=l_freq,
+        h_freq=h_freq,
+        show_psd=psd,
+        save_path=save,
+    )
 
 
 if __name__ == "__main__":
