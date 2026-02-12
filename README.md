@@ -2,6 +2,8 @@
 
 Brain-computer interface (BCI) with machine learning based on electroencephalographic data.
 
+
+
 ## What is a BCI?
 
 A brain-computer interface translates brain activity into commands that a computer can understand. The brain constantly produces electrical signals as neurons communicate. These signals can be measured non-invasively using electroencephalography (EEG) — electrodes placed on the scalp that record voltage fluctuations.
@@ -9,6 +11,12 @@ A brain-computer interface translates brain activity into commands that a comput
 In a motor imagery BCI, a person imagines moving a body part (e.g., left hand, right hand, or feet) without actually moving it. Different imagined movements produce distinct patterns of brain activity, particularly over the motor cortex. A machine learning classifier can learn to distinguish these patterns and predict which movement the person is imagining, effectively allowing them to control a computer with their thoughts.
 
 ## EEG Data and Motor Imagery
+
+### How to load data
+```bash
+aws s3 sync --no-sign-request s3://physionet-open/eegmmidb/1.0.0/ ./data
+```
+
 
 This project uses the [PhysioNet EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/) containing recordings from 109 subjects, each performing 14 experimental runs with 64 EEG channels.
 
