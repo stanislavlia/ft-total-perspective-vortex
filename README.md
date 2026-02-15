@@ -1,6 +1,6 @@
-# Total Perspective Vortex
+# Introduction
 
-Brain-computer interface (BCI) with machine learning based on electroencephalographic data.
+A brain-computer interface (BCI) system that classifies motor imagery and motor execution tasks from electroencephalographic (EEG) data using machine learning. The project implements a complete pipeline — from raw EEG signal loading and preprocessing to real-time classification — built on the PhysioNet EEG Motor Movement/Imagery Dataset (109 subjects, 64 channels). It uses Common Spatial Patterns (CSP) for spatial filtering and dimensionality reduction combined with Linear Discriminant Analysis (LDA) for classification, all wrapped in a scikit-learn Pipeline with cross-validated evaluation and a streaming playback mode that simulates real-time BCI inference.
 
 
 
@@ -14,9 +14,21 @@ In a motor imagery BCI, a person imagines moving a body part (e.g., left hand, r
 
 Electroencephalography (EEG) is a non-invasive neuroimaging technique that measures electrical activity in the brain by recording voltage fluctuations from electrodes placed on the scalp. These signals, typically in the microvolt range, reflect the synchronized activity of millions of neurons and contain oscillations at different frequency bands (delta, theta, alpha, mu, beta, and gamma) that correspond to various cognitive and motor states. EEG offers excellent temporal resolution (millisecond-scale) and is widely used in both clinical applications and research, particularly in brain-computer interfaces due to its portability, low cost, and ability to capture real-time neural dynamics associated with motor imagery, attention, and other cognitive processes.
 
-<img src="media/eeg_map_locations.png" alt="EEG electrode placement" width="600">
+<figure>
+  <img src="media/eeg_measurement_process.jpg" alt="EEG measurement process" width="600">
+  <figcaption><em>Figure 1: EEG measurement process</em></figcaption>
+</figure>
 
-<img src="media/eeg_measurement_process.jpg" alt="EEG measurement process" width="600">
+Electrodes are positioned on the scalp according to the International 10-20 system, a standardized layout based on measured distances between anatomical landmarks of the skull. Each electrode site is labeled with a letter indicating the brain region (F — frontal, C — central, P — parietal, O — occipital, T — temporal) and a number indicating laterality (odd numbers for the left hemisphere, even for the right, and "z" for the midline). For motor imagery tasks, the most relevant electrodes are those over the sensorimotor cortex, such as C3, Cz, and C4.
+
+<figure>
+  <img src="media/eeg_map_locations.png" alt="EEG electrode placement" width="600">
+  <figcaption><em>Figure 2: Standard EEG electrode placement (10-20 system)</em></figcaption>
+</figure>
+
+
+
+# Implementation
 
 ## EEG Data and Motor Imagery
 
@@ -60,7 +72,17 @@ LDA (Linear Discriminant Analysis) — classification
 
 CSP is a spatial filtering technique that finds linear combinations of EEG channels maximizing the variance difference between two classes. It solves a generalized eigenvalue problem on the class-conditional covariance matrices, producing spatial filters that highlight the most discriminative brain activity patterns.
 
+<figure>
+  <img src="media/csp_visualization.png" alt="Before/After CSP" width="1000">
+  <figcaption><em>Figure 3: Visualization/Intuitoon behind Common Spatial Pattern algorithm</em></figcaption>
+</figure>
+
+
+
 Our CSP implementation (`src/csp.py`) is a custom sklearn-compatible transformer inheriting from `BaseEstimator` and `TransformerMixin`. It uses numpy/scipy for eigenvalue decomposition and covariance estimation, and integrates directly into an sklearn `Pipeline`.
+
+
+
 
 ### Training and Evaluation
 
@@ -129,6 +151,13 @@ src/
 ## Quick Start
 
 ```bash
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
 cd src
 
 # Visualize raw vs filtered EEG
@@ -150,13 +179,3 @@ python mybci.py evaluate --subjects 1-10 --verbose
 ```
 
 See [CLI.md](CLI.md) for the full command reference.
-
-## Technology Stack
-
-- **Python 3.x**
-- **MNE** — EEG data parsing and preprocessing
-- **scikit-learn** — Pipeline, cross-validation, LDA classification
-- **NumPy / SciPy** — Covariance matrices, eigenvalue decomposition
-- **matplotlib** — Visualization
-- **Click** — CLI framework
-- **joblib** — Model serialization
