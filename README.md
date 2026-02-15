@@ -10,6 +10,14 @@ A brain-computer interface translates brain activity into commands that a comput
 
 In a motor imagery BCI, a person imagines moving a body part (e.g., left hand, right hand, or feet) without actually moving it. Different imagined movements produce distinct patterns of brain activity, particularly over the motor cortex. A machine learning classifier can learn to distinguish these patterns and predict which movement the person is imagining, effectively allowing them to control a computer with their thoughts.
 
+## What is EEG?
+
+Electroencephalography (EEG) is a non-invasive neuroimaging technique that measures electrical activity in the brain by recording voltage fluctuations from electrodes placed on the scalp. These signals, typically in the microvolt range, reflect the synchronized activity of millions of neurons and contain oscillations at different frequency bands (delta, theta, alpha, mu, beta, and gamma) that correspond to various cognitive and motor states. EEG offers excellent temporal resolution (millisecond-scale) and is widely used in both clinical applications and research, particularly in brain-computer interfaces due to its portability, low cost, and ability to capture real-time neural dynamics associated with motor imagery, attention, and other cognitive processes.
+
+<img src="media/eeg_map_locations.png" alt="EEG electrode placement" width="600">
+
+<img src="media/eeg_measurement_process.jpg" alt="EEG measurement process" width="600">
+
 ## EEG Data and Motor Imagery
 
 ### How to load data
